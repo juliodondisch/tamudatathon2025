@@ -1,11 +1,17 @@
 package com.hebproductsearch.backend.service.Embeddings;
 
-import com.hebproductsearch.backend.model.dto.DenseEmbedding;
-import com.hebproductsearch.backend.model.dto.SparseEmbedding;
+import java.util.ArrayList;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class SparseEmbeddingService {
-    public SparseEmbedding getEmbedding(String info){
+    public ArrayList<Float> getEmbedding(String info){
         // Function will query ngram encoder backend
-        return new SparseEmbedding();
+        ArrayList<Float> embedding = new ArrayList<Float>(384);
+        for (int i = 0; i < 1000; i++) {
+            embedding.add(1.0f);
+        }
+        return embedding;
     }
 }
