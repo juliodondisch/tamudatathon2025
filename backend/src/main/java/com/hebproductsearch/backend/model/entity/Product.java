@@ -1,7 +1,10 @@
 package com.hebproductsearch.backend.model.entity;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.hebproductsearch.backend.model.dto.DenseEmbedding;
 import com.hebproductsearch.backend.model.dto.SparseEmbedding;
+import com.hebproductsearch.backend.service.Embeddings.SparseEmbeddingService;
 
 public class Product {
     DenseEmbedding denseEmbedding;

@@ -1,6 +1,6 @@
 package com.hebproductsearch.backend.controller;
 
-import com.hebproductsearch.backend.model.dto.Product;
+import com.hebproductsearch.backend.model.entity.Product;
 import com.hebproductsearch.backend.service.DatabaseBuildingService;
 import com.hebproductsearch.backend.service.QueryCompletionService;
 

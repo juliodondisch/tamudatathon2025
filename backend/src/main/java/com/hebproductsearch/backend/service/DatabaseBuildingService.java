@@ -29,7 +29,7 @@ public class DatabaseBuildingService {
         for (Product product : data) {
             DenseEmbedding dense = denseEmbeddingService.getEmbedding(product.info());
             SparseEmbedding sparse = sparseEmbeddingService.getEmbedding(product.info());
-            product.
+            product.updateEmbeddings(dense, sparse);
 
             postgresRepository.insertProduct(product);
         }
