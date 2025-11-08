@@ -1,5 +1,6 @@
 package com.hebproductsearch.backend.controller;
 
+import com.hebproductsearch.backend.model.dto.QueryRequest;
 import com.hebproductsearch.backend.model.entity.Product;
 import com.hebproductsearch.backend.service.DatabaseBuildingService;
 import com.hebproductsearch.backend.service.QueryCompletionService;
@@ -25,8 +26,8 @@ public class ChatCompletionController {
     @Autowired
     private DatabaseBuildingService databaseBuilder;
 
-    @PostMapping("/create-db") 
-    public ResponseEntity<Boolean> chatCompletions(@PathVariable String dbName, @RequestBody ArrayList<Product> data) {
+    @PostMapping("/create-db/{dbName}") 
+    public ResponseEntity<Boolean> createDB(@PathVariable String dbName, @RequestBody ArrayList<Product> data) {
         try {
             Boolean success = databaseBuilder.createDB(dbName, data);
             if (success){
@@ -39,6 +40,17 @@ public class ChatCompletionController {
         catch (Exception e) {
             log.error("Database Creation Failed", e);
             return ResponseEntity.status(500).body(false);
+        }
+    }
+
+    @PostMapping("/query")
+    public ArrayList<String> query(@RequestBody QueryRequest request){
+        try{
+            return queryCompletion.getTop10Responses(request.getQuery(), request.getDbName());
+        }
+        catch (Exception e) {
+            log.error("Query Failed", e);
+            return new ArrayList<>();
         }
     }
 }

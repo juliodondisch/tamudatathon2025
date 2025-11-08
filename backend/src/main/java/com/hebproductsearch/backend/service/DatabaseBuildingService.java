@@ -22,18 +22,18 @@ public class DatabaseBuildingService {
     private SparseEmbeddingService sparseEmbeddingService;
 
     // Goal: database creation flow (data -> create postgres table -> loop through data, for each: -> get embeddings -> insert data to table)
-    public Boolean createDB(String dbName, ArrayList<Product> data){
+    public Boolean createDB(String tableName, ArrayList<Product> data){
         
-        postgresRepository.createTable(dbName);
+        postgresRepository.createTable(tableName);
 
         for (Product product : data) {
             DenseEmbedding dense = denseEmbeddingService.getEmbedding(product.info());
             SparseEmbedding sparse = sparseEmbeddingService.getEmbedding(product.info());
             product.updateEmbeddings(dense, sparse);
 
-            postgresRepository.insertProduct(product);
+            postgresRepository.insertProduct(tableName, product);
         }
         
-        return postgresRepository.tableHealthCheck(dbName);
+        return postgresRepository.tableHealthCheck(tableName);
     }
 }
