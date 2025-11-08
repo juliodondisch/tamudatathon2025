@@ -1,0 +1,9 @@
+# backend goals:
+# 1. query dense embedding model
+# 2. query sparse embedding model
+# 3. insert dense and sparse embeddings into postgres database
+# 4. Construct database creation flow (data -> create postgres table -> loop through data, for each: -> get embeddings -> insert data to table)
+# 5. query postgres database with hybrid search and obtain top 10 results
+# 5. Construct query flow (query -> get embeddings -> perform search -> get top 10 results)
+
+
