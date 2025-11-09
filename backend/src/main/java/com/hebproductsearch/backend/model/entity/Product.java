@@ -36,5 +36,36 @@ public class Product {
     public String info(){
         return title + description;
     }
+
+    public String getText() {
+        StringBuilder sb = new StringBuilder();
+
+        if (title != null && !title.isBlank()) {
+            sb.append("Title: ").append(title).append(". ");
+        }
+
+        if (description != null && !description.isBlank()) {
+            sb.append("Description: ").append(description).append(". ");
+        }
+
+        if (brand != null && !brand.isBlank()) {
+            sb.append("Brand: ").append(brand).append(". ");
+        }
+
+        if (categoryPath != null && !categoryPath.isBlank()) {
+            sb.append("Category: ").append(categoryPath).append(". ");
+        }
+
+        if (safetyWarning != null && !safetyWarning.isBlank()) {
+            sb.append("Safety Warning: ").append(safetyWarning).append(". ");
+        }
+
+        if (ingredients != null && !ingredients.isBlank()) {
+            sb.append("Ingredients: ").append(ingredients).append(". ");
+        }
+
+        return sb.toString().trim();
+    }
+
     
 }

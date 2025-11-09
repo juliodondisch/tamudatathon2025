@@ -17,14 +17,14 @@ app = FastAPI()
 
 # load model once at startup
 MODEL_NAME = "all-MiniLM-L6-v2"
-model = GrocerySearchModel()
+model = SentenceTransformer(MODEL_NAME) # Should be GroceryCheckout
 
 class EncodingRequest(BaseModel):
     query: str
 
 @app.post("/dense-embed")
 def denseEncode(req: EncodingRequest):
-    emb = model.encode_query(req.query)
+    emb = model.encode(req.query) # should be encode_query
     return {"dense_embedding": emb.tolist()}
 
 @app.post("/sparse-embed")

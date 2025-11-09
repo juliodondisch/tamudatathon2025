@@ -23,6 +23,8 @@ public class QueryCompletionService {
     private DenseEmbeddingService denseEmbeddingService;
     @Autowired
     private SparseEmbeddingService sparseEmbeddingService;
+    @Autowired
+    private RerankingService rerankingService;
 
     // Goal: Construct query flow (query -> get embeddings -> perform search -> get top 10 results)
     public ArrayList<String> getTop10Responses(String query, String tableName){
@@ -30,11 +32,14 @@ public class QueryCompletionService {
         ArrayList<Float> sparse = sparseEmbeddingService.getEmbedding(query);
         log.info("Made embeddings");
 
-        ArrayList<Product> top10Products = postgresRepository.hybridSearch(tableName, dense, sparse);
-        log.info("Got top30 Products");
+        ArrayList<Product> top60Products = postgresRepository.hybridSearch(tableName, dense, sparse);
+        log.info("Got top60 Products");
 
+        ArrayList<Product> top30Products = rerankingService.rerank(top60Products, query, 60);
+        log.info("Reranked to top 30 products");
+        
         ArrayList<String> top30ProductIDs = new ArrayList<String>();
-        for (Product product : top10Products){
+        for (Product product : top30Products){
             top30ProductIDs.add(product.getProductId());
         }
 

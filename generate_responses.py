@@ -22,6 +22,7 @@ queries = [item["query"] for item in data]
 query_ids = [item["query_id"] for item in data]
 
 for i, query in enumerate(queries):
+    print(f"Query {i}")
     payload = {
         "tableName": tableName,
         "query": query
