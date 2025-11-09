@@ -10,50 +10,43 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from fastapi import FastAPI
 from pydantic import BaseModel
+import hashlib
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('text', help='Text to encode')
-# parser.add_argument('--model', '-m', default='all-MiniLM-L6-v2',
-#                     help='Model name or path (default: all-MiniLM-L6-v2)')
-# parser.add_argument('--format', '-f', choices=['numpy', 'list', 'json'], default='numpy',
-#                     help='Output format: numpy (default), list, or json')
-# args = parser.parse_args()
-
-# # Load model and encode
-# model = SentenceTransformer(args.model)
-# embedding = model.encode(args.text)
-
-# Output based on format
-# if args.format == 'numpy':
-#     print(embedding)
-# elif args.format == 'list':
-#     print(embedding.tolist())
-# elif args.format == 'json':
-#     import json
-#     print(json.dumps(embedding.tolist()))
-
-# Serving:
 app = FastAPI()
+
+# load model once at startup
+MODEL_NAME = "all-MiniLM-L6-v2"
+model = SentenceTransformer(MODEL_NAME)
 
 class EncodingRequest(BaseModel):
     query: str
 
 @app.post("/dense-embed")
 def denseEncode(req: EncodingRequest):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('text', help=req.query)
-    parser.add_argument('--model', '-m', default='all-MiniLM-L6-v2',
-                        help='Model name or path (default: all-MiniLM-L6-v2)')
-    parser.add_argument('--format', '-f', choices=['numpy', 'list', 'json'], default='numpy',
-                        help='Output format: numpy (default), list, or json')
-    args = parser.parse_args()
-
-    # Load model and encode
-    model = SentenceTransformer(args.model)
-    embedding = model.encode(args.text)
-    return {"dense_embedding": embedding.tolist()}
-
+    emb = model.encode(req.query)
+    return {"dense_embedding": emb.tolist()}
 
 @app.post("/sparse-embed")
 def sparseEncode(req: EncodingRequest):
-    return 0
+    # simple deterministic n-gram hashing encoder (char n-grams)
+    size = 1000
+    vec = np.zeros(size, dtype=float)
+    text = req.query.lower()
+
+    # character n-grams (3..5)
+    min_n = 3
+    max_n = 5
+    for n in range(min_n, max_n + 1):
+        if len(text) < n:
+            continue
+        for i in range(len(text) - n + 1):
+            ngram = text[i:i + n]
+            idx = int(hashlib.md5(ngram.encode()).hexdigest(), 16) % size
+            vec[idx] += 1.0
+
+    # optional normalization (L2)
+    norm = np.linalg.norm(vec)
+    if norm > 0:
+        vec = (vec / norm).astype(float)
+
+    return {"sparse_embedding": vec.tolist()}
