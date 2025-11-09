@@ -15,8 +15,9 @@ import hashlib
 app = FastAPI()
 
 # load model once at startup
-MODEL_NAME = "all-MiniLM-L6-v2"
-model = SentenceTransformer(MODEL_NAME)
+# Using fine-tuned model for semantic search
+MODEL_PATH = "output/heb-semantic-search"
+model = SentenceTransformer(MODEL_PATH)
 
 class EncodingRequest(BaseModel):
     query: str
