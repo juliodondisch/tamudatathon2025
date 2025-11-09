@@ -73,7 +73,35 @@ public class PostgresRepository{
 
     public ArrayList<Product> hybridSearch(String tableName, ArrayList<Float> dense, ArrayList<Float> sparse){
         // Will return top 10 products from search
-        return new ArrayList<Product>();
+        String denseVectorStr = dense.toString()
+                .replace("[", "[")
+                .replace("]", "]");
+        String sparseVectorStr = sparse.toString()
+                .replace("[", "[")
+                .replace("]", "]");
+
+        String sql = """
+            SELECT product_id, title, description, brand, 
+                   category_path, safety_warning, ingredients,
+                   dense_embedding <#> '%s'::vector AS similarity
+            FROM %s
+            ORDER BY similarity
+            LIMIT 10;
+        """.formatted(denseVectorStr, tableName);
+        
+        return new ArrayList<>(jdbc.query(sql, (rs, rowNum) -> 
+            new Product(
+                rs.getString("product_id"),
+                dense,
+                sparse,
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getString("brand"),
+                rs.getString("category_path"),
+                rs.getString("safety_warning"),
+                rs.getString("ingredients")
+            )
+        ));
     }
 
     public Boolean tableHealthCheck(String tableName){

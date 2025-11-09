@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class QueryRequest {
     String query;
-    String dbName;
+    String tableName;
 }

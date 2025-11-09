@@ -11,7 +11,10 @@ import com.hebproductsearch.backend.repository.PostgresRepository;
 import com.hebproductsearch.backend.service.Embeddings.DenseEmbeddingService;
 import com.hebproductsearch.backend.service.Embeddings.SparseEmbeddingService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class QueryCompletionService {
 
     @Autowired
@@ -25,13 +28,17 @@ public class QueryCompletionService {
     public ArrayList<String> getTop10Responses(String query, String tableName){
         ArrayList<Float> dense = denseEmbeddingService.getEmbedding(query);
         ArrayList<Float> sparse = sparseEmbeddingService.getEmbedding(query);
-        
+        log.info("Made embeddings");
+
         ArrayList<Product> top10Products = postgresRepository.hybridSearch(tableName, dense, sparse);
+        log.info("Got top10 Products");
 
         ArrayList<String> top10ProductIDs = new ArrayList<String>();
         for (Product product : top10Products){
             top10ProductIDs.add(product.getProductId());
         }
+
+        log.info(top10ProductIDs.toString());
 
         // Will return an ArrayList with the top 10 product ids
         return top10ProductIDs;

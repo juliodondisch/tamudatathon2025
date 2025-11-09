@@ -46,7 +46,7 @@ public class ChatCompletionController {
     @PostMapping("/query")
     public ArrayList<String> query(@RequestBody QueryRequest request){
         try{
-            return queryCompletion.getTop10Responses(request.getQuery(), request.getDbName());
+            return queryCompletion.getTop10Responses(request.getQuery(), request.getTableName());
         }
         catch (Exception e) {
             log.error("Query Failed", e);
