@@ -1,4 +1,6 @@
-Help me proofread The challenge was to create a multimodal search system to search through HEB's product catalog and get the desired products. 
+## Multimodal Item Search System
+
+The challenge was to create a multimodal search system to search through HEB's product catalog and get the desired products. 
 
 We decided to approach this by using RAG techniques, combining the results from different models (dense vectors, sparse vectors, and clip vectors from a shared vector space for images), and trying out different combinations of these vectors to rank results. We also applied reranking techniques to all of the results to capture more semantic meaning. We also attempted finetuning the sentencetransformers model, however experienced deteriorating performance and returned to the non-finetuned version.
 
@@ -8,5 +10,7 @@ Our tech stack was Java SpringBoot for the orchestration layer, which handled mo
 
 Performance increased the most when we added reranking, especially nDGC@10. Adding ngram and image embeddings improved the R@30 score the most, seemingly indicating that searching through vectors was the best way to get initial results, and reranking was the best way to sort them correclty. We avoided more brute force solutions like having a model manually rank the products because that would defeat the purpose of the challenge, using vector search and reranking is actually reasonable.
 
-
+## Architecture Diagram
+We've included an architecture diagram that shows how the code works:
+ ![Architecture Diagram](Architecture_diagram.png)
 
