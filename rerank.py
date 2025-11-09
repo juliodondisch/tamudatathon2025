@@ -5,7 +5,7 @@ import requests
 import os
 
 # --- CONFIG ---
-HF_TOKEN = "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"
+HF_TOKEN = ""
 # Replace this with your endpoint URL from Hugging Face (not just the token)
 HF_ENDPOINT = ""
 
