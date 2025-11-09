@@ -2,11 +2,18 @@
 Get vector embeddings - minimal output version.
 
 Usage:
-    python get_embeddings_simple.py "hearty organic soups"
-    python get_embeddings_simple.py "soup" --model output/heb-semantic-search
+    # Fine-tuned model (default)
+    uvicorn get_embeddings:app --port 8001
+
+    # Baseline model
+    MODEL_PATH=baseline uvicorn get_embeddings:app --port 8001
+
+    # Or custom path
+    MODEL_PATH=output/baseline-model uvicorn get_embeddings:app --port 8001
 """
 import argparse
 import numpy as np
+import os
 from sentence_transformers import SentenceTransformer
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -14,10 +21,25 @@ import hashlib
 
 app = FastAPI()
 
-# load model once at startup
-# Using fine-tuned model for semantic search
-MODEL_PATH = "output/heb-semantic-search"
+# Load model once at startup
+# Can be controlled via MODEL_PATH environment variable
+# Options: "finetuned" (default), "baseline", or a custom path
+model_env = os.getenv("MODEL_PATH", "finetuned")
+
+if model_env == "finetuned":
+    MODEL_PATH = "output/heb-semantic-search"
+    MODEL_NAME = "Fine-tuned Model"
+elif model_env == "baseline":
+    MODEL_PATH = "output/baseline-model"
+    MODEL_NAME = "Baseline Model"
+else:
+    MODEL_PATH = model_env
+    MODEL_NAME = f"Custom Model ({model_env})"
+
+print(f"Loading model: {MODEL_NAME}")
+print(f"Path: {MODEL_PATH}")
 model = SentenceTransformer(MODEL_PATH)
+print(f"✅ Model loaded successfully (dimension: {model.get_sentence_embedding_dimension()})")
 
 class EncodingRequest(BaseModel):
     query: str
@@ -51,6 +73,16 @@ def sparseEncode(req: EncodingRequest):
         vec = (vec / norm).astype(float)
 
     return {"sparse_embedding": vec.tolist()}
+
+@app.get("/model-info")
+def modelInfo():
+    """Get information about the currently loaded model."""
+    return {
+        "model_name": MODEL_NAME,
+        "model_path": MODEL_PATH,
+        "embedding_dimension": model.get_sentence_embedding_dimension(),
+        "is_finetuned": model_env == "finetuned"
+    }
 
 '''
 Test Requests:
