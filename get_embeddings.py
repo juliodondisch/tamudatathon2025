@@ -50,3 +50,16 @@ def sparseEncode(req: EncodingRequest):
         vec = (vec / norm).astype(float)
 
     return {"sparse_embedding": vec.tolist()}
+
+'''
+Test Requests:
+# Dense:
+curl -s -X POST "http://127.0.0.1:8001/dense-embed" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"hearty organic soups"}' | jq .
+
+# Sparse:
+curl -s -X POST "http://127.0.0.1:8001/sparse-embed" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"hearty organic soups"}' | jq .
+'''
