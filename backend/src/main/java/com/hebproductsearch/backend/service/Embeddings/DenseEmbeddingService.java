@@ -1,19 +1,43 @@
 package com.hebproductsearch.backend.service.Embeddings;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class DenseEmbeddingService {
-    
+
+    @Value("${denseembedding.url}")
+    private String embeddingUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
     public ArrayList<Float> getEmbedding(String info){
-        // Function will query dense embedding backend.
-        // temporarily return an arraylist of 384 1s
-        ArrayList<Float> embedding = new ArrayList<Float>(384);
-        for (int i = 0; i < 384; i++) {
-            embedding.add(1.0f);
+        // JSON request body
+        Map<String, String> requestBody = Map.of("query", info);
+
+        // Make the POST request and parse response as Map
+        Map<String, Object> response = restTemplate.postForObject(
+            embeddingUrl,
+            requestBody,
+            Map.class
+        );
+
+        // Extract the embedding array from JSON
+        List<Double> returned = (List<Double>) response.get("dense_embedding");
+        // Convert double list → float list
+        ArrayList<Float> embedding = new ArrayList<>(384);
+        for (Double val : returned) {
+            embedding.add(val.floatValue());
         }
+
         return embedding;
     }
 }

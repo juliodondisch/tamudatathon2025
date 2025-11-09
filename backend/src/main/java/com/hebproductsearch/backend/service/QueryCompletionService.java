@@ -31,17 +31,17 @@ public class QueryCompletionService {
         log.info("Made embeddings");
 
         ArrayList<Product> top10Products = postgresRepository.hybridSearch(tableName, dense, sparse);
-        log.info("Got top10 Products");
+        log.info("Got top30 Products");
 
-        ArrayList<String> top10ProductIDs = new ArrayList<String>();
+        ArrayList<String> top30ProductIDs = new ArrayList<String>();
         for (Product product : top10Products){
-            top10ProductIDs.add(product.getProductId());
+            top30ProductIDs.add(product.getProductId());
         }
 
-        log.info(top10ProductIDs.toString());
+        log.info(top30ProductIDs.toString());
 
         // Will return an ArrayList with the top 10 product ids
-        return top10ProductIDs;
+        return top30ProductIDs;
     }
     
 }

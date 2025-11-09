@@ -11,19 +11,20 @@ from sentence_transformers import SentenceTransformer
 from fastapi import FastAPI
 from pydantic import BaseModel
 import hashlib
+from model_interface_v2 import GrocerySearchModel
 
 app = FastAPI()
 
 # load model once at startup
 MODEL_NAME = "all-MiniLM-L6-v2"
-model = SentenceTransformer(MODEL_NAME)
+model = GrocerySearchModel()
 
 class EncodingRequest(BaseModel):
     query: str
 
 @app.post("/dense-embed")
 def denseEncode(req: EncodingRequest):
-    emb = model.encode(req.query)
+    emb = model.encode_query(req.query)
     return {"dense_embedding": emb.tolist()}
 
 @app.post("/sparse-embed")

@@ -86,7 +86,7 @@ public class PostgresRepository{
                    dense_embedding <#> '%s'::vector AS similarity
             FROM %s
             ORDER BY similarity
-            LIMIT 10;
+            LIMIT 30;
         """.formatted(denseVectorStr, tableName);
         
         return new ArrayList<>(jdbc.query(sql, (rs, rowNum) -> 

@@ -10,7 +10,6 @@ import com.hebproductsearch.backend.repository.PostgresRepository;
 import com.hebproductsearch.backend.service.Embeddings.DenseEmbeddingService;
 import com.hebproductsearch.backend.service.Embeddings.SparseEmbeddingService;
 
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
