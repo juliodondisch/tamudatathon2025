@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.hebproductsearch.backend.model.entity.Product;
 import com.hebproductsearch.backend.repository.PostgresRepository;
 import com.hebproductsearch.backend.service.Embeddings.DenseEmbeddingService;
+import com.hebproductsearch.backend.service.Embeddings.ImageEmbeddingService;
 import com.hebproductsearch.backend.service.Embeddings.SparseEmbeddingService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,21 +26,26 @@ public class QueryCompletionService {
     private SparseEmbeddingService sparseEmbeddingService;
     @Autowired
     private RerankingService rerankingService;
+    @Autowired
+    private HybridSearchService hybridSearchService;
+    @Autowired
+    private ImageEmbeddingService imageEmbeddingService;
 
     // Goal: Construct query flow (query -> get embeddings -> perform search -> get top 10 results)
     public ArrayList<String> getTop10Responses(String query, String tableName){
         ArrayList<Float> dense = denseEmbeddingService.getEmbedding(query);
         ArrayList<Float> sparse = sparseEmbeddingService.getEmbedding(query);
+        ArrayList<Float> imageEmb = imageEmbeddingService.getEmbedding(query);
         log.info("Made embeddings");
 
-        ArrayList<Product> top60Products = postgresRepository.hybridSearch(tableName, dense, sparse);
-        log.info("Got top60 Products");
+        ArrayList<Product> top30Products = hybridSearchService.hybridSearch(tableName, dense, sparse, imageEmb);
+        log.info("Got top 30 Products");
 
-        ArrayList<Product> top30Products = rerankingService.rerank(top60Products, query, 60);
-        log.info("Reranked to top 30 products");
+        ArrayList<Product> top30ProductsReranked = rerankingService.rerank(top30Products, query, 30);
+        log.info("Reranked top 30 products");
         
         ArrayList<String> top30ProductIDs = new ArrayList<String>();
-        for (Product product : top30Products){
+        for (Product product : top30ProductsReranked){
             top30ProductIDs.add(product.getProductId());
         }
 

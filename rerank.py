@@ -1,10 +1,16 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from sentence_transformers import CrossEncoder
+import requests
+import os
 
+# --- CONFIG ---
+HF_TOKEN = "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"
+# Replace this with your endpoint URL from Hugging Face (not just the token)
+HF_ENDPOINT = "https://api-inference.huggingface.co/models/BAAI/bge‑reranker‑v2‑gemma"
+
+# --- APP ---
 app = FastAPI()
-model = CrossEncoder("BAAI/bge-reranker-base")
 
 class Candidate(BaseModel):
     product: str
@@ -16,37 +22,30 @@ class RerankRequest(BaseModel):
 
 @app.post("/rerank")
 def rerank(req: RerankRequest):
-    # Prepare (query, text) pairs for CrossEncoder
-    pairs = [(req.query, candidate.text) for candidate in req.candidates]
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
-    # Model returns relevance scores (higher is better)
-    scores = model.predict(pairs).tolist()
+    # Prepare query and documents for Hugging Face API
+    data = {
+        "inputs": {
+            "query": req.query,
+            "documents": [c.text for c in req.candidates]
+        }
+    }
 
-    # Fixed: use candidate.product instead of Candidate.product_id
+    response = requests.post(HF_ENDPOINT, headers=headers, json=data)
+
+    if response.status_code != 200:
+        return {"error": response.text}
+
+    scores = response.json()  # The HF model returns a list of scores
+
     ranked = sorted(
-        [{"id": candidate.product, "text": candidate.text, "score": score}
-         for candidate, score in zip(req.candidates, scores)],
+        [
+            {"id": c.product, "text": c.text, "score": s}
+            for c, s in zip(req.candidates, scores)
+        ],
         key=lambda x: x["score"],
-        reverse=True
+        reverse=True,
     )
 
     return {"results": ranked}
-
-'''
-Test request:
-curl -X POST "http://127.0.0.1:8002/rerank" \
--H "Content-Type: application/json" \
--d '{
-  "query": "organic soup",
-  "candidates": [
-    {
-      "product": "10045036",
-      "text": "H-E-B Fish Market Party Tray - Seasoned Shrimp Cocktail"
-    },
-    {
-      "product": "10048008", 
-      "text": "Organic Vegetable Soup - Rich and Hearty"
-    }
-  ]
-}'
-'''

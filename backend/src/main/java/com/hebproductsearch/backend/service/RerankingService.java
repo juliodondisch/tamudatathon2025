@@ -24,12 +24,11 @@ public class RerankingService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public ArrayList<Product> rerank(ArrayList<Product> topN, String query, int n){
-         // Build candidates payload:
-        // Each element is { "product": productId, "text": product.getText() }
+        // Build candidates payload:
         List<Map<String, String>> candidates = topN.stream()
             .map(prod -> Map.of(
                 "product", prod.getProductId(),
-                "text", prod.getText()     // ✅ uses the Product.getText() function we added
+                "text", prod.getText()
             ))
             .collect(Collectors.toList());
 
@@ -38,26 +37,26 @@ public class RerankingService {
             "candidates", candidates
         );
 
-        // Send POST request to Python FastAPI reranker
+        // send POST request
         Map<String, Object> response = restTemplate.postForObject(
             rerankingUrl,
             requestBody,
             Map.class
         );
 
+        // fallback
         if (response == null || !response.containsKey("results")) {
-            return topN; // fallback (no reranking done)
+            return topN;
         }
 
-        // Python returns: { "results": [ { "id": "...", "score": ... }, ... ] }
         List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
 
-        // Extract product_id ranking order
+        // gets product_id ranking order
         List<String> rankedIds = results.stream()
             .map(entry -> (String) entry.get("id"))
             .collect(Collectors.toList());
 
-        // Reorder original products to match ranked order
+        // reorders
         ArrayList<Product> reranked = new ArrayList<>();
         for (String id : rankedIds) {
             for (Product prod : topN) {
@@ -68,7 +67,6 @@ public class RerankingService {
             }
         }
 
-        // Trim to top N requested (e.g., 30)
         return new ArrayList<>(reranked.subList(0, Math.min(n, reranked.size())));
     }
 }

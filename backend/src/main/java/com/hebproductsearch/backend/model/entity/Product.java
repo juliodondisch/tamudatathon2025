@@ -19,6 +19,7 @@ public class Product {
     private String productId;
     private ArrayList<Float> denseEmbedding;
     private ArrayList<Float> sparseEmbedding;
+    private ArrayList<Float> imageEmbedding;
     private String title;
     private String description;
     private String brand;
@@ -28,9 +29,10 @@ public class Product {
     private String safetyWarning;
     private String ingredients;
 
-    public void updateEmbeddings(ArrayList<Float> dense, ArrayList<Float> sparse){
+    public void updateEmbeddings(ArrayList<Float> dense, ArrayList<Float> sparse, ArrayList<Float> image){
         this.denseEmbedding = dense;
         this.sparseEmbedding = sparse;
+        this.imageEmbedding = image;
     }
 
     public String info(){

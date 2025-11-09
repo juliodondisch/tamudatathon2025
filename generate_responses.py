@@ -28,7 +28,11 @@ for i, query in enumerate(queries):
         "query": query
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+    except:
+        print(f"Missed query: {query}")
+        continue
     
     # collect response, should be an array list of 30 strings
     resp_list = response.json()

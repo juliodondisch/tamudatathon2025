@@ -26,6 +26,7 @@ public class PostgresRepository{
                 product_id TEXT PRIMARY KEY,
                 dense_embedding VECTOR(384),
                 sparse_embedding VECTOR(1000),
+                image_embedding VECTOR(512),
                 title TEXT,
                 description TEXT,
                 brand TEXT,
@@ -47,20 +48,24 @@ public class PostgresRepository{
             String sparseVectorStr = product.getSparseEmbedding().toString()
                 .replace("[", "'[")
                 .replace("]", "]'");
+            
+            String imageVectorStr = product.getImageEmbedding().toString()
+                .replace("[", "'[")
+                .replace("]", "]'");
 
             String sql = String.format("""
                 INSERT INTO %s (
-                    product_id, dense_embedding, sparse_embedding,
+                    product_id, dense_embedding, sparse_embedding, image_embedding,
                     title, description, brand, category_path,
                     safety_warning, ingredients
-                ) VALUES (?, %s, %s, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, %s, %s, %s, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(product_id) DO NOTHING
-                """, tableName, denseVectorStr, sparseVectorStr);
+                """, tableName, denseVectorStr, sparseVectorStr, imageVectorStr);
 
             jdbc.update(sql,
                 product.getProductId(),
                 product.getTitle(),
-                product.getDescription(), 
+                product.getDescription(),
                 product.getBrand(),
                 product.getCategoryPath(),
                 product.getSafetyWarning(),
@@ -71,12 +76,71 @@ public class PostgresRepository{
         }
     }
 
-    public ArrayList<Product> hybridSearch(String tableName, ArrayList<Float> dense, ArrayList<Float> sparse){
+    public ArrayList<Product> imageSearch(String tableName, ArrayList<Float> dense, ArrayList<Float> sparse, ArrayList<Float> image){
         // Will return top 10 products from search
-        String denseVectorStr = dense.toString()
+        String imageVectorStr = image.toString()
                 .replace("[", "[")
                 .replace("]", "]");
+
+        String sql = """
+            SELECT product_id, title, description, brand, 
+                   category_path, safety_warning, ingredients,
+                   image_embedding <#> '%s'::vector AS similarity
+            FROM %s
+            ORDER BY similarity
+            LIMIT 60;
+        """.formatted(imageVectorStr, tableName);
+        
+        return new ArrayList<>(jdbc.query(sql, (rs, rowNum) -> 
+            new Product(
+                rs.getString("product_id"),
+                dense,
+                sparse,
+                image,
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getString("brand"),
+                rs.getString("category_path"),
+                rs.getString("safety_warning"),
+                rs.getString("ingredients")
+            )
+        ));
+    }
+
+    public ArrayList<Product> sparseSearch(String tableName, ArrayList<Float> dense, ArrayList<Float> sparse, ArrayList<Float> image){
+        // Will return top 10 products from search
         String sparseVectorStr = sparse.toString()
+                .replace("[", "[")
+                .replace("]", "]");
+
+        String sql = """
+            SELECT product_id, title, description, brand, 
+                   category_path, safety_warning, ingredients,
+                   sparse_embedding <#> '%s'::vector AS similarity
+            FROM %s
+            ORDER BY similarity
+            LIMIT 60;
+        """.formatted(sparseVectorStr, tableName);
+        
+        return new ArrayList<>(jdbc.query(sql, (rs, rowNum) -> 
+            new Product(
+                rs.getString("product_id"),
+                dense,
+                sparse,
+                image,
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getString("brand"),
+                rs.getString("category_path"),
+                rs.getString("safety_warning"),
+                rs.getString("ingredients")
+            )
+        ));
+    }
+
+    public ArrayList<Product> denseSearch(String tableName, ArrayList<Float> dense, ArrayList<Float> sparse, ArrayList<Float> image){
+        // Will return top 10 products from search
+        String denseVectorStr = dense.toString()
                 .replace("[", "[")
                 .replace("]", "]");
 
@@ -94,6 +158,7 @@ public class PostgresRepository{
                 rs.getString("product_id"),
                 dense,
                 sparse,
+                image,
                 rs.getString("title"),
                 rs.getString("description"),
                 rs.getString("brand"),
