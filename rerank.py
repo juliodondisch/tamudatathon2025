@@ -7,7 +7,7 @@ import os
 # --- CONFIG ---
 HF_TOKEN = "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"
 # Replace this with your endpoint URL from Hugging Face (not just the token)
-HF_ENDPOINT = "https://api-inference.huggingface.co/models/BAAI/bge‑reranker‑v2‑gemma"
+HF_ENDPOINT = ""
 
 # --- APP ---
 app = FastAPI()
