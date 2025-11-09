@@ -13,7 +13,7 @@ headers = {
     "Content-Type": "application/json"
 }
 
-queries_json_file = "queries_synth_test.json"
+queries_json_file = "queries_synth_train.json"
 
 with open(queries_json_file, "r") as f:
     data = json.load(f)
